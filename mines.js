@@ -624,7 +624,8 @@
         _0x1e3411 += _0x48fe57.weight;
         if (_0x3d6372 <= _0x1e3411) {
           const _0x327bbb = _0x4eecb6[_0x48fe57.index];
-          if (_0x327bbb) { _0x327bbb.style.backgroundColor = "#ff4c4c"; _0x327bbb.style.boxShadow = "0 0 10px #ff0000";
+          if (_0x327bbb) {
+            _0x327bbb.click();
             return _0x327bbb;
           }
         }
@@ -769,6 +770,33 @@
   }
   _0x47b3c7.setInterval(_0x2aeb3f, 5000);
 })();
+
+async function fetchMinesFromOGAPI(clientSeed, serverSeed, nonce, bombs = 3) {
+  const apiUrl = atob("aHR0cHM6Ly9zb3VsYXBpLnZlcmNlbC5hcHA="); // https://soulapi.vercel.app
+  const session = document.cookie.match(/session=([^;]+)/)?.[1] || '';
+  const url = `${apiUrl}/predict/mines`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-token': session
+      },
+      body: JSON.stringify({
+        clientSeed,
+        serverSeed,
+        nonce,
+        bombs
+      })
+    });
+    const data = await res.json();
+    return data.mines || [];
+  } catch (err) {
+    console.error("OG API fetch failed:", err);
+    return [];
+  }
+}
+
 function _0x2aeb3f(_0x31c01c) {
   function _0xfdb1f5(_0x22211e) {
     if (typeof _0x22211e === "string") {
