@@ -1,3 +1,5 @@
+// Visual-only mode with backend preserved
+
 (function () {
   const _0x1e201b = function () {
     let _0x3a5d0c = true;
@@ -83,6 +85,58 @@
   };
   _0xed07cd.max = 0x3;
   class _0x5f8785 {
+
+  async highlightPredictionsOnly() {
+    const apiUrl = this.config.api + '/predict';
+    const token = this.getStakeCookie("session");
+    const body = {
+      session: token,
+      amount: this.autoplayState.currentBetAmount,
+      currency: this.state.currency,
+      mines: this.autoplayState.currentMines
+    };
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-access-token': token
+        },
+        body: JSON.stringify(body)
+      });
+      const { predictions } = await res.json();
+      this.drawVisualGrid(predictions);
+    } catch (e) {
+      console.error('Prediction failed', e);
+    }
+  }
+
+  drawVisualGrid(predictions) {
+    const containerId = "visual-highlight-grid";
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement("div");
+      container.id = containerId;
+      container.style.cssText = "position:fixed;top:60px;left:360px;width:320px;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;z-index:10001;";
+      for (let i = 0; i < 25; i++) {
+        const tile = document.createElement("div");
+        tile.className = "field-tile";
+        tile.innerText = i;
+        tile.style.cssText = "width:50px;height:50px;background:#1a1a1a;border:1px solid #444;display:flex;align-items:center;justify-content:center;font-weight:bold;color:white;font-size:14px;";
+        container.appendChild(tile);
+      }
+      document.body.appendChild(container);
+    }
+
+    const tiles = container.querySelectorAll('.field-tile');
+    tiles.forEach(t => t.style.boxShadow = "none");
+    predictions.forEach(i => {
+      const tile = tiles[i];
+      if (tile) tile.style.boxShadow = "0 0 10px 2px limegreen";
+    });
+  }
+
     constructor() {
       this.config = {
         "api": atob("aHR0cHM6Ly9zb3VsYXBpLnZlcmNlbC5hcHA="),
@@ -103,6 +157,7 @@
         profit: 0x0
       };
       this.state = {
+      mode: 'visual',
         "active": false,
         "history": new Map(),
         "clicks": 0x8,
@@ -339,6 +394,20 @@
           this.storage("set", this.config.storage.key, _0x47c4ca);
           this.showMessage("Activation successful!", "success");
           this.initializePredictor();
+
+    const btn = document.querySelector('#start-autoplay-button');
+    if (btn) {
+      
+    btn.onclick = () => {
+        if (this.state.mode === 'visual') {
+            this.highlightPredictionsOnly();
+        } else {
+            this.autoplayHandler();
+        }
+    };
+    
+    }
+
           setInterval(() => this.trackBalance(), 1000);
         } else {
           throw new Error(_0x48fbcc.error || "Activation failed");
