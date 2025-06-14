@@ -1,4 +1,4 @@
-// Visual-only mode with backend preserved
+// NEW
 
 (function () {
   const _0x1e201b = function () {
